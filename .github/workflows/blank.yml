@@ -1,4 +1,4 @@
-name: Windows Release (Qt via aqt)
+name: Windows Release (Qt via aqt, robust)
 
 on:
   workflow_dispatch:
@@ -8,11 +8,18 @@ on:
 jobs:
   build-windows:
     runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        qt:
+          # Prova prima Qt recenti con MSVC 2022
+          - { version: "6.7.2", arch: "win64_msvc2022_64", toolset: "" }
+          - { version: "6.6.3", arch: "win64_msvc2022_64", toolset: "" }
+          # Fallback: Qt 6.5 LTS richiede toolset 2019
+          - { version: "6.5.3", arch: "win64_msvc2019_64", toolset: "v142" }
 
     env:
-      QT_VERSION: 6.6.3                 # ← versione Qt valida
-      QT_ARCH: win64_msvc2022_64        # ← arch corretta per 6.6.x
-      APP_NAME: Giochiamo.exe           # ← il tuo eseguibile
+      APP_NAME: Giochiamo.exe
 
     steps:
       - name: Checkout
@@ -28,18 +35,22 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install "aqtinstall==3.3.0"
 
-      # (debug) Mostra gli arch disponibili per la versione scelta
-      - name: List available arch for Qt ${{ env.QT_VERSION }}
+      - name: List available arch for Qt ${{ matrix.qt.version }}
         shell: pwsh
         run: |
-          python -m aqt list-qt windows desktop --arch $env:QT_VERSION
+          python -m aqt list-qt windows desktop --arch $env:QTVER
+        env:
+          QTVER: ${{ matrix.qt.version }}
 
-      - name: Download Qt
+      - name: Download Qt ${{ matrix.qt.version }} / ${{ matrix.qt.arch }}
         shell: pwsh
         run: |
           $qtRoot = Join-Path $env:RUNNER_TEMP "Qt"
-          python -m aqt install-qt windows desktop $env:QT_VERSION $env:QT_ARCH -O $qtRoot
-          echo "QT_DIR=$qtRoot\$env:QT_VERSION\$env:QT_ARCH" | Out-File -FilePath $env:GITHUB_ENV -Append
+          python -m aqt install-qt windows desktop $env:QTVER $env:QTARCH -O $qtRoot
+          echo "QT_DIR=$qtRoot\$env:QTVER\$env:QTARCH" | Out-File -FilePath $env:GITHUB_ENV -Append
+        env:
+          QTVER:  ${{ matrix.qt.version }}
+          QTARCH: ${{ matrix.qt.arch }}
 
       - name: Show Qt tools
         shell: pwsh
@@ -50,6 +61,7 @@ jobs:
       - name: Configure (CMake VS2022 x64)
         run: >
           cmake -S . -B build -G "Visual Studio 17 2022" -A x64
+          ${{ matrix.qt.toolset && format('-T {0}', matrix.qt.toolset) || '' }}
           -DCMAKE_BUILD_TYPE=Release
           -DCMAKE_PREFIX_PATH="%QT_DIR%"
 
@@ -76,10 +88,10 @@ jobs:
           & "$env:QT_DIR\bin\windeployqt.exe" --release --compiler-runtime $exe
 
       - name: Zip portable folder
-        run: powershell Compress-Archive -Path build\install\* -DestinationPath Giochiamo-windows.zip
+        run: powershell Compress-Archive -Path build\install\* -DestinationPath "Giochiamo-windows-${{ matrix.qt.version }}.zip"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Giochiamo-windows
-          path: Giochiamo-windows.zip
+          name: Giochiamo-windows-${{ matrix.qt.version }}
+          path: Giochiamo-windows-${{ matrix.qt.version }}.zip
