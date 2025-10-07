@@ -90,6 +90,7 @@ void SudokuPage::buildGrid(){
             e->setFrame(false);         // evita il bordo di default del QLineEdit
             e->setFixedSize(40, 40);
             applyCellBorder(e, r, c);   // imposta spessori top/right/bottom/left
+            applyBaseColors(e, /*given=*/false); // testo nero su bianco
             m_cell[r][c] = e;
             m_grid->addWidget(e, r, c);
         }
