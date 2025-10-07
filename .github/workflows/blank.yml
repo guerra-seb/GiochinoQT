@@ -1,4 +1,4 @@
-name: Windows Release (Qt via aqt, robust)
+name: Windows Release (MSYS2 Qt6)
 
 on:
   workflow_dispatch:
@@ -6,92 +6,64 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build-windows:
+  build:
     runs-on: windows-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        qt:
-          # Prova prima Qt recenti con MSVC 2022
-          - { version: "6.7.2", arch: "win64_msvc2022_64", toolset: "" }
-          - { version: "6.6.3", arch: "win64_msvc2022_64", toolset: "" }
-          # Fallback: Qt 6.5 LTS richiede toolset 2019
-          - { version: "6.5.3", arch: "win64_msvc2019_64", toolset: "v142" }
 
     env:
-      APP_NAME: Giochiamo.exe
+      APP_NAME: Giochiamo.exe   # se il target si chiama diverso, cambia questo
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      # Installa toolchain MinGW + Qt6 dai pacchetti MSYS2
+      - name: Setup MSYS2 with Qt6
+        uses: msys2/setup-msys2@v2
         with:
-          python-version: "3.11"
+          update: true
+          msystem: MINGW64
+          install: >-
+            mingw-w64-x86_64-toolchain
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-ninja
+            mingw-w64-x86_64-qt6-base
+            mingw-w64-x86_64-qt6-tools
+            mingw-w64-x86_64-qt6-svg
 
-      - name: Install aqtinstall
+      - name: Configure (CMake + Ninja)
+        shell: msys2 {0}
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install "aqtinstall==3.3.0"
-
-      - name: List available arch for Qt ${{ matrix.qt.version }}
-        shell: pwsh
-        run: |
-          python -m aqt list-qt windows desktop --arch $env:QTVER
-        env:
-          QTVER: ${{ matrix.qt.version }}
-
-      - name: Download Qt ${{ matrix.qt.version }} / ${{ matrix.qt.arch }}
-        shell: pwsh
-        run: |
-          $qtRoot = Join-Path $env:RUNNER_TEMP "Qt"
-          python -m aqt install-qt windows desktop $env:QTVER $env:QTARCH -O $qtRoot
-          echo "QT_DIR=$qtRoot\$env:QTVER\$env:QTARCH" | Out-File -FilePath $env:GITHUB_ENV -Append
-        env:
-          QTVER:  ${{ matrix.qt.version }}
-          QTARCH: ${{ matrix.qt.arch }}
-
-      - name: Show Qt tools
-        shell: pwsh
-        run: |
-          Write-Host "QT_DIR=$env:QT_DIR"
-          Get-ChildItem "$env:QT_DIR\bin" | Select-Object Name | Out-String | Write-Host
-
-      - name: Configure (CMake VS2022 x64)
-        run: >
-          cmake -S . -B build -G "Visual Studio 17 2022" -A x64
-          ${{ matrix.qt.toolset && format('-T {0}', matrix.qt.toolset) || '' }}
-          -DCMAKE_BUILD_TYPE=Release
-          -DCMAKE_PREFIX_PATH="%QT_DIR%"
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_PREFIX_PATH="$MINGW_PREFIX"
 
       - name: Build
+        shell: msys2 {0}
         run: cmake --build build --config Release
 
       - name: Install to staging dir
-        run: cmake --install build --config Release --prefix build/install
+        shell: msys2 {0}
+        run: cmake --install build --prefix build/install
 
-      - name: Verify exe exists
-        shell: pwsh
+      - name: Bundle Qt DLLs (windeployqt) + runtime MinGW
+        shell: msys2 {0}
         run: |
-          $exe = Join-Path "build/install" $env:APP_NAME
-          if (-not (Test-Path $exe)) {
-            Write-Host "Contenuto build/install:"
-            Get-ChildItem -Recurse build/install | ForEach-Object { $_.FullName }
-            throw "Eseguibile non trovato in build/install. Controlla il nome del target o l'install() in CMake."
-          }
-
-      - name: Bundle Qt DLLs (windeployqt)
-        shell: pwsh
-        run: |
-          $exe = Join-Path "build/install" $env:APP_NAME
-          & "$env:QT_DIR\bin\windeployqt.exe" --release --compiler-runtime $exe
+          exe="build/install/$APP_NAME"
+          if [ ! -f "$exe" ]; then
+            echo "Non trovo $exe"; ls -R build/install; exit 1
+          fi
+          windeployqt --release --compiler-runtime "$exe"
+          # Runtime MinGW necessari:
+          cp /mingw64/bin/libstdc++-6.dll      build/install/ || true
+          cp /mingw64/bin/libgcc_s_seh-1.dll   build/install/ || true
+          cp /mingw64/bin/libwinpthread-1.dll  build/install/ || true
 
       - name: Zip portable folder
-        run: powershell Compress-Archive -Path build\install\* -DestinationPath "Giochiamo-windows-${{ matrix.qt.version }}.zip"
+        shell: pwsh
+        run: Compress-Archive -Path build\install\* -DestinationPath Giochiamo-windows.zip
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Giochiamo-windows-${{ matrix.qt.version }}
-          path: Giochiamo-windows-${{ matrix.qt.version }}.zip
+          name: Giochiamo-windows
+          path: Giochiamo-windows.zip
