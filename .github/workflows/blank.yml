@@ -3,7 +3,7 @@ name: Windows Release (Qt)
 on:
   workflow_dispatch:
   push:
-    branches: [ "main" ]   # cambia qui se usi un branch diverso
+    branches: [ "main" ]
 
 jobs:
   build-windows:
@@ -13,13 +13,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Pinno Python per evitare incompatibilità con aqt
+      # Pin Python (alcune versioni recenti hanno dato noie con aqt)
       - name: Setup Python 3.10
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
 
-      # Installa Qt con versioni fissate (aqt 3.1*)
+      # Installa Qt (LTS stabile). Se fallisse, prova 6.6.3 o 6.7.2.
       - name: Install Qt 6.5.3 (MSVC 2022 x64)
         uses: jurplel/install-qt-action@v3
         with:
@@ -30,14 +30,12 @@ jobs:
           aqtversion: '==3.1.*'
           cache: 'true'
 
-      # (Opzionale ma utile): verifica che windeployqt sia nel PATH
-      - name: Check Qt tools
+      - name: Check Qt tools are available
         shell: pwsh
         run: |
           where windeployqt
           echo "Qt6_DIR=$env:Qt6_DIR"
 
-      # Configura CMake puntando esplicitamente a Qt
       - name: Configure (CMake VS2022 x64)
         run: >
           cmake -S . -B build -G "Visual Studio 17 2022" -A x64
@@ -50,7 +48,17 @@ jobs:
       - name: Install to staging dir
         run: cmake --install build --config Release --prefix build/install
 
-      # ⬇️ Se il tuo eseguibile NON si chiama 'giochino.exe', cambia qui sotto
+      # ⬇️ CAMBIA 'giochino.exe' se il tuo target ha un altro nome
+      - name: Verify exe exists
+        shell: pwsh
+        run: |
+          $exe = Join-Path "build/install" "giochino.exe"
+          if (-not (Test-Path $exe)) {
+            Write-Host "Contenuto build/install:"
+            Get-ChildItem -Recurse build/install | ForEach-Object { $_.FullName }
+            throw "Eseguibile non trovato in build/install. Controlla il nome del target o l'install() in CMake."
+          }
+
       - name: Bundle Qt DLLs with windeployqt
         shell: pwsh
         run: |
