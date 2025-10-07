@@ -10,9 +10,9 @@ jobs:
     runs-on: windows-latest
 
     env:
-      QT_VERSION: 6.5.3          # se serve, prova 6.6.3 o 6.7.2
-      QT_ARCH: msvc2022_64       # toolchain Windows x64 (MSVC 2022)
-      APP_NAME: Giochiamo.exe     # <-- cambia se il tuo target ha un altro nome
+      QT_VERSION: 6.6.3                 # ← versione Qt valida
+      QT_ARCH: win64_msvc2022_64        # ← arch corretta per 6.6.x
+      APP_NAME: Giochiamo.exe           # ← il tuo eseguibile
 
     steps:
       - name: Checkout
@@ -27,6 +27,12 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install "aqtinstall==3.3.0"
+
+      # (debug) Mostra gli arch disponibili per la versione scelta
+      - name: List available arch for Qt ${{ env.QT_VERSION }}
+        shell: pwsh
+        run: |
+          python -m aqt list-qt windows desktop --arch $env:QT_VERSION
 
       - name: Download Qt
         shell: pwsh
@@ -70,10 +76,10 @@ jobs:
           & "$env:QT_DIR\bin\windeployqt.exe" --release --compiler-runtime $exe
 
       - name: Zip portable folder
-        run: powershell Compress-Archive -Path build\install\* -DestinationPath giochino-windows.zip
+        run: powershell Compress-Archive -Path build\install\* -DestinationPath Giochiamo-windows.zip
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: giochino-windows
-          path: giochino-windows.zip
+          name: Giochiamo-windows
+          path: Giochiamo-windows.zip
