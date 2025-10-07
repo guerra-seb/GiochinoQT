@@ -18,7 +18,7 @@ else()
   set(QT_PACKAGE Qt5)
 endif()
 
-add_executable(giochino
+add_executable(Giochiamo
     src/main.cpp
     src/MainWindow.h src/MainWindow.cpp
     src/pages/homepage.h src/pages/homepage.cpp
@@ -32,10 +32,10 @@ add_executable(giochino
     src/data/words.h
 )
 
-target_link_libraries(giochino PRIVATE ${QT_PACKAGE}::Widgets)
+target_link_libraries(Giochiamo PRIVATE ${QT_PACKAGE}::Widgets)
 
 # alla fine del file
-install(TARGETS giochino
+install(TARGETS Giochiamo
     BUNDLE DESTINATION .        # macOS .app
     RUNTIME DESTINATION .       # Windows/Linux exe
 )
