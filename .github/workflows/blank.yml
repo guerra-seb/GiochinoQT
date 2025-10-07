@@ -1,0 +1,67 @@
+name: Windows Release (Qt)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]   # cambia qui se usi un branch diverso
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Pinno Python per evitare incompatibilità con aqt
+      - name: Setup Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      # Installa Qt con versioni fissate (aqt 3.1*)
+      - name: Install Qt 6.5.3 (MSVC 2022 x64)
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: '6.5.3'
+          host: 'windows'
+          target: 'desktop'
+          arch: 'win64_msvc2022_64'
+          aqtversion: '==3.1.*'
+          cache: 'true'
+
+      # (Opzionale ma utile): verifica che windeployqt sia nel PATH
+      - name: Check Qt tools
+        shell: pwsh
+        run: |
+          where windeployqt
+          echo "Qt6_DIR=$env:Qt6_DIR"
+
+      # Configura CMake puntando esplicitamente a Qt
+      - name: Configure (CMake VS2022 x64)
+        run: >
+          cmake -S . -B build -G "Visual Studio 17 2022" -A x64
+          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_PREFIX_PATH="%Qt6_DIR%"
+
+      - name: Build
+        run: cmake --build build --config Release
+
+      - name: Install to staging dir
+        run: cmake --install build --config Release --prefix build/install
+
+      # ⬇️ Se il tuo eseguibile NON si chiama 'giochino.exe', cambia qui sotto
+      - name: Bundle Qt DLLs with windeployqt
+        shell: pwsh
+        run: |
+          $exe = Join-Path "build/install" "Giochiamo.exe"
+          windeployqt --release --compiler-runtime $exe
+
+      - name: Zip portable folder
+        run: powershell Compress-Archive -Path build\install\* -DestinationPath giochino-windows.zip
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: giochino-windows
+          path: giochino-windows.zip
