@@ -48,12 +48,26 @@ jobs:
       - name: Bundle Qt DLLs (windeployqt) + runtime MinGW
         shell: msys2 {0}
         run: |
+          set -e
           exe="build/install/$APP_NAME"
           if [ ! -f "$exe" ]; then
             echo "Non trovo $exe"; ls -R build/install; exit 1
           fi
-          windeployqt --release --compiler-runtime "$exe"
-          # Runtime MinGW necessari:
+      
+          # Cerca il binario giusto: windeployqt / windeployqt-qt6 / windeployqt6
+          WDEPLOY="$(command -v windeployqt || true)"
+          [ -z "$WDEPLOY" ] && WDEPLOY="$(command -v windeployqt-qt6 || true)"
+          [ -z "$WDEPLOY" ] && WDEPLOY="$(command -v windeployqt6 || true)"
+          if [ -z "$WDEPLOY" ]; then
+            echo "windeployqt* non trovato. Elenco in /mingw64/bin:"
+            ls -1 /mingw64/bin | grep -i windeploy || true
+            exit 1
+          fi
+          echo "Using: $WDEPLOY"
+      
+          "$WDEPLOY" --release --compiler-runtime "$exe"
+      
+          # Runtime MinGW necessari
           cp /mingw64/bin/libstdc++-6.dll      build/install/ || true
           cp /mingw64/bin/libgcc_s_seh-1.dll   build/install/ || true
           cp /mingw64/bin/libwinpthread-1.dll  build/install/ || true
