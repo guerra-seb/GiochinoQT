@@ -97,14 +97,23 @@ void SudokuPage::buildGrid(){
     }
 }
 
+void SudokuPage::applyBaseColors(QLineEdit *e, bool given){
+    QPalette p = e->palette();
+    p.setColor(QPalette::Base, given ? QColor("#f0f3f7") : QColor("#ffffff"));
+    p.setColor(QPalette::Text, QColor("#111111"));
+    p.setColor(QPalette::Highlight, QColor("#cde1ff"));
+    p.setColor(QPalette::HighlightedText, QColor("#000000"));
+    e->setPalette(p);
+
+    QFont f = e->font();
+    f.setBold(given);
+    e->setFont(f);
+
+    e->setReadOnly(given);
+}
+
 void SudokuPage::styleGiven(QLineEdit *e, bool given){
-    if (given) {
-        e->setReadOnly(true);
-        e->setStyleSheet(e->styleSheet() + " QLineEdit { background:#eee; font-weight:600; }");
-    } else {
-        e->setReadOnly(false);
-        e->setStyleSheet(e->styleSheet() + " QLineEdit { background:#fff; font-weight:400; }");
-    }
+    applyBaseColors(e, given);
 }
 
 void SudokuPage::setAllEditable(bool en){
@@ -280,7 +289,10 @@ void SudokuPage::applyCellBorder(QLineEdit *e, int r, int c){
     if (left>0)  css += QString("border-left:%1px solid #333;").arg(left);
     css += QString("border-right:%1px solid #333;").arg(right);
     css += QString("border-bottom:%1px solid #333;").arg(bottom);
-    css += "}";
+    // colori di default (testo nero su bianco) + selezione visibile
+    css += "color:#111; background:#ffffff;"
+           "selection-background-color:#cde1ff;"
+           "selection-color:#000;}";
     e->setStyleSheet(css);
 }
 
