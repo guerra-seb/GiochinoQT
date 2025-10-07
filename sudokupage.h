@@ -39,6 +39,7 @@ private:
     void styleGiven(QLineEdit *e, bool given);
     void setAllEditable(bool en);
     void applyCellBorder(QLineEdit *e, int r, int c);
+    void applyBaseColors(QLineEdit *e, bool given);
 
     // Generatore/solver
     void clearBoard(int b[9][9]);
