@@ -16,31 +16,31 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 # Eseguibile (usa WIN32 su Windows per evitare la console nera)
 if (WIN32)
   add_executable(Giochiamo WIN32
-    src/main.cpp
-    src/MainWindow.h src/MainWindow.cpp
-    src/pages/homepage.h src/pages/homepage.cpp
-    src/pages/secondpage.h src/pages/secondpage.cpp
-    src/pages/optionspage.h src/pages/optionspage.cpp
-    src/pages/anagrampage.h src/pages/anagrampage.cpp
-    src/pages/hangmanpage.h src/pages/hangmanpage.cpp
-    src/pages/memoryconfigpage.h src/pages/memoryconfigpage.cpp
-    src/pages/memorypage.h src/pages/memorypage.cpp
-    src/pages/sudokupage.h src/pages/sudokupage.cpp
-    src/data/words.h
+    Sources/main.cpp
+    Headers/mainwindow.h        Sources/mainwindow.cpp
+    Headers/homepage.h          Sources/homepage.cpp
+    Headers/secondpage.h        Sources/secondpage.cpp
+    Headers/optionspage.h       Sources/optionspage.cpp
+    Headers/anagrampage.h       Sources/anagrampage.cpp
+    Headers/hangmanpage.h       Sources/hangmanpage.cpp
+    Headers/memoryconfigpage.h  Sources/memoryconfigpage.cpp
+    Headers/memorypage.h        Sources/memorypage.cpp
+    Headers/sudokupage.h        Sources/sudokupage.cpp
+    Headers/words.h
   )
 else()
   add_executable(Giochiamo
-    src/main.cpp
-    src/MainWindow.h src/MainWindow.cpp
-    src/pages/homepage.h src/pages/homepage.cpp
-    src/pages/secondpage.h src/pages/secondpage.cpp
-    src/pages/optionspage.h src/pages/optionspage.cpp
-    src/pages/anagrampage.h src/pages/anagrampage.cpp
-    src/pages/hangmanpage.h src/pages/hangmanpage.cpp
-    src/pages/memoryconfigpage.h src/pages/memoryconfigpage.cpp
-    src/pages/memorypage.h src/pages/memorypage.cpp
-    src/pages/sudokupage.h src/pages/sudokupage.cpp
-    src/data/words.h
+    Sources/main.cpp
+    Headers/mainwindow.h        Sources/mainwindow.cpp
+    Headers/homepage.h          Sources/homepage.cpp
+    Headers/secondpage.h        Sources/secondpage.cpp
+    Headers/optionspage.h       Sources/optionspage.cpp
+    Headers/anagrampage.h       Sources/anagrampage.cpp
+    Headers/hangmanpage.h       Sources/hangmanpage.cpp
+    Headers/memoryconfigpage.h  Sources/memoryconfigpage.cpp
+    Headers/memorypage.h        Sources/memorypage.cpp
+    Headers/sudokupage.h        Sources/sudokupage.cpp
+    Headers/words.h
   )
 endif()
 
