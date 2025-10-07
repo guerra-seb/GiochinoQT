@@ -10,13 +10,13 @@ jobs:
     runs-on: windows-latest
 
     env:
-      APP_NAME: Giochiamo.exe   # se il target si chiama diverso, cambia questo
+      APP_NAME: Giochiamo.exe   # se il target ha un altro nome, cambia qui
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Installa toolchain MinGW + Qt6 dai pacchetti MSYS2
+      # Toolchain MinGW + Qt6 + ntldd (scanner dipendenze)
       - name: Setup MSYS2 with Qt6
         uses: msys2/setup-msys2@v2
         with:
@@ -29,6 +29,7 @@ jobs:
             mingw-w64-x86_64-qt6-base
             mingw-w64-x86_64-qt6-tools
             mingw-w64-x86_64-qt6-svg
+            mingw-w64-x86_64-ntldd-git
 
       - name: Configure (CMake + Ninja)
         shell: msys2 {0}
@@ -45,7 +46,7 @@ jobs:
         shell: msys2 {0}
         run: cmake --install build --prefix build/install
 
-      - name: Bundle Qt DLLs (windeployqt) + runtime MinGW
+      - name: Bundle Qt + copy ALL MSYS2 runtime DLLs
         shell: msys2 {0}
         run: |
           set -e
@@ -53,24 +54,41 @@ jobs:
           if [ ! -f "$exe" ]; then
             echo "Non trovo $exe"; ls -R build/install; exit 1
           fi
-      
-          # Cerca il binario giusto: windeployqt / windeployqt-qt6 / windeployqt6
+
+          # Trova il binario windeployqt (varia su MSYS2)
           WDEPLOY="$(command -v windeployqt || true)"
           [ -z "$WDEPLOY" ] && WDEPLOY="$(command -v windeployqt-qt6 || true)"
           [ -z "$WDEPLOY" ] && WDEPLOY="$(command -v windeployqt6 || true)"
           if [ -z "$WDEPLOY" ]; then
-            echo "windeployqt* non trovato. Elenco in /mingw64/bin:"
-            ls -1 /mingw64/bin | grep -i windeploy || true
-            exit 1
+            echo "windeployqt* non trovato"; ls -1 /mingw64/bin | grep -i windeploy || true; exit 1
           fi
           echo "Using: $WDEPLOY"
-      
+
+          # 1) Qt DLL + plugin
           "$WDEPLOY" --release --compiler-runtime "$exe"
-      
-          # Runtime MinGW necessari
-          cp /mingw64/bin/libstdc++-6.dll      build/install/ || true
-          cp /mingw64/bin/libgcc_s_seh-1.dll   build/install/ || true
-          cp /mingw64/bin/libwinpthread-1.dll  build/install/ || true
+
+          # 2) Runtime MinGW base (per sicurezza)
+          for f in libstdc++-6.dll libgcc_s_seh-1.dll libwinpthread-1.dll; do
+            [ -f "/mingw64/bin/$f" ] && cp -n "/mingw64/bin/$f" build/install/ || true
+          done
+
+          # 3) Scan ricorsivo: copia OGNI dipendenza di tutti .exe/.dll presente in install
+          list_deps() {
+            ntldd -R "$1" \
+              | tr '\\' '/' \
+              | awk '{for (i=1;i<=NF;i++) if ($i ~ /mingw64\/bin\/[^ )]+\.dll/) {gsub(/[()]/,"",$i); print $i}}' \
+              | sort -u
+          }
+          copy_dep() { f="$1"; [ -f "$f" ] && cp -n "$f" build/install/ || true; }
+
+          find build/install -type f \( -name '*.exe' -o -name '*.dll' \) | while read -r bin; do
+            for dep in $(list_deps "$bin"); do
+              copy_dep "$dep"
+            done
+          done
+
+          echo "Check finale (esistono ora harfbuzz/freetype/md4c?):"
+          ls build/install | grep -Ei 'lib(harfbuzz-0|freetype-6|md4c)\.dll' || true
 
       - name: Zip portable folder
         shell: pwsh
