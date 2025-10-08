@@ -101,16 +101,13 @@ SecondPage::SecondPage(QWidget *parent) : QWidget(parent) {
     // Navigazione pagina + nuovo codice
     auto *nav = new QHBoxLayout;
     auto *btnBackPage = new QPushButton("Torna indietro");
-    auto *btnOpts     = new QPushButton("Opzioni");
     auto *btnNewCode  = new QPushButton("Nuovo codice");
     nav->addWidget(btnBackPage);
-    nav->addWidget(btnOpts);
     nav->addStretch();
     nav->addWidget(btnNewCode);
     root->addLayout(nav);
 
     connect(btnBackPage, &QPushButton::clicked, this, &SecondPage::backRequested);
-    connect(btnOpts,     &QPushButton::clicked, this, &SecondPage::optionsRequested);
     connect(btnNewCode,  &QPushButton::clicked, this, &SecondPage::newSecret);
 
     newSecret(); // genera il primo codice
