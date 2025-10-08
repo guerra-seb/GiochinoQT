@@ -25,7 +25,9 @@ set(APP_SOURCES
   memoryconfigpage.h memoryconfigpage.cpp
   memorypage.h memorypage.cpp
   sudokupage.h sudokupage.cpp
+  game2048page.h game2048page.cpp
   words.h
+  resources.qrc
 )
 
 # Su Windows evita la console
