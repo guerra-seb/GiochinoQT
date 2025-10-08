@@ -51,12 +51,15 @@ HomePage::HomePage(QWidget *parent) : QWidget(parent) {
     auto *btnAnagr  = makeCard("Anagrammi",       QIcon(":/icons/icons/arrows-random.svg"));
     auto *btnSudoku = makeCard("Sudoku",          QIcon(":/icons/icons/grid-dots.svg"));
     auto *btn2048   = makeCard("2048",            QIcon(":/icons/icons/number-64-small.svg"));
+    auto *btnOpts   = makeCard("Opzioni",         QIcon(":/icons/icons/settings.svg"));
 
     // Disposizione 2 colonne
     int r=0, c=0;
     auto place = [&](QWidget *w) { grid->addWidget(w, r, c); if (++c>=2) { c=0; ++r; } };
     place(btnCode); place(btnHang); place(btnAnagr); place(btnMemory); place(btnSudoku); place(btn2048);
-
+    // nuova riga e bottone Opzioni centrato orizzontalmente (colspan=2)
+    if (c != 0) { c = 0; ++r; }
+    grid->addWidget(btnOpts, r, 0, 1, 2, Qt::AlignHCenter);
     root->addLayout(grid);
     root->addStretch();
 
@@ -66,5 +69,6 @@ HomePage::HomePage(QWidget *parent) : QWidget(parent) {
     connect(btnAnagr,  &QToolButton::clicked, this, &HomePage::startAnagramClicked);
     connect(btnMemory, &QToolButton::clicked, this, &HomePage::startMemoryClicked);
     connect(btnSudoku, &QToolButton::clicked, this, &HomePage::startSudokuClicked);
-    connect(btn2048, &QToolButton::clicked, this, &HomePage::start2048Clicked);
+    connect(btn2048,   &QToolButton::clicked, this, &HomePage::start2048Clicked);
+    connect(btnOpts,   &QToolButton::clicked, this, &HomePage::optionsRequested);
 }
