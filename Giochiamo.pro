@@ -34,7 +34,8 @@ SOURCES += \
     memoryconfigpage.cpp \
     memorypage.cpp \
     sudokupage.cpp \
-    game2048page.cpp
+    game2048page.cpp \
+    thememanager.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -47,7 +48,8 @@ HEADERS += \
     memoryconfigpage.h \
     memorypage.h \
     sudokupage.h \
-    game2048page.h
+    game2048page.h \
+    thememanager.h
 
 FORMS += \
         mainwindow.ui
