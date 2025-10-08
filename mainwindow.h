@@ -18,6 +18,7 @@ private:
     int m_idxMemCfg  = -1; // Memory: scelta dimensione
     int m_idxMemory  = -1; // Memory: gioco
     int m_idxSudoku  = -1; // Sudoku
+    int m_idx2048    = -1; // 2048
 
     void setupMenus();
 };
