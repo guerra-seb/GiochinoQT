@@ -33,7 +33,8 @@ SOURCES += \
     anagrampage.cpp \
     memoryconfigpage.cpp \
     memorypage.cpp \
-    sudokupage.cpp
+    sudokupage.cpp \
+    game2048page.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -45,10 +46,14 @@ HEADERS += \
     words.h \
     memoryconfigpage.h \
     memorypage.h \
-    sudokupage.h
+    sudokupage.h \
+    game2048page.h
 
 FORMS += \
         mainwindow.ui
 
 DISTFILES += \
     CMakeLists.txt
+
+RESOURCES += \
+    resources.qrc
