@@ -1,5 +1,7 @@
 #include <QApplication>
 #include "mainwindow.h"
+#include "thememanager.h"
+#include <QCoreApplication>
 
 static const char* APP_STYLE_LIGHT = R"(
 * { font-family: 'Segoe UI','Noto Sans','Arial'; font-size: 14px; }
@@ -47,6 +49,7 @@ QStatusBar { background:#0e1218; }
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
     qApp->setStyleSheet(APP_STYLE_LIGHT);   // oppure APP_STYLE_DARK
+    ThemeManager::instance().applySavedTheme(); // COSA NUOVA
     MainWindow w;
     w.resize(600, 400);
     w.show();
