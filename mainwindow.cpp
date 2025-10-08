@@ -45,6 +45,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
     // Navigazione pilotata dalla Home
     connect(home, &HomePage::startCodeClicked,    [this]{ m_stack->setCurrentIndex(m_idxSecond);  });
+    connect(home, &HomePage::optionsRequested,    [this]{ m_stack->setCurrentIndex(m_idxOpts);   });
     connect(home, &HomePage::startHangmanClicked, [this]{ m_stack->setCurrentIndex(m_idxHangman); });
     connect(home, &HomePage::startAnagramClicked, [this]{ m_stack->setCurrentIndex(m_idxAnagram); });
     connect(home, &HomePage::startMemoryClicked,  [this]{ m_stack->setCurrentIndex(m_idxMemCfg);  });
@@ -59,7 +60,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
     // Back/forward delle altre pagine
     connect(code,    &SecondPage::backRequested,     [this]{ m_stack->setCurrentIndex(m_idxHome);   });
-    connect(code,    &SecondPage::optionsRequested,  [this]{ m_stack->setCurrentIndex(m_idxOpts);   });
+    // connect(code,    &SecondPage::optionsRequested,  [this]{ m_stack->setCurrentIndex(m_idxOpts);   });
 
     connect(hangman, &HangmanPage::backRequested,    [this]{ m_stack->setCurrentIndex(m_idxHome);   });
     connect(anagram, &AnagramPage::backRequested,    [this]{ m_stack->setCurrentIndex(m_idxHome);   });
@@ -83,7 +84,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 }
 
 void MainWindow::setupMenus() {
-    auto *mPagina = menuBar()->addMenu("Pagina");
+    auto *mPagina  = menuBar()->addMenu("Pagina");
     auto *aHome    = mPagina->addAction("Home");
     auto *aCode    = mPagina->addAction("Becca il Codice");
     auto *aHangman = mPagina->addAction("Impiccato");
@@ -93,14 +94,14 @@ void MainWindow::setupMenus() {
     auto *aSudoku  = mPagina->addAction("Sudoku");
     auto *a2048    = mPagina->addAction("2048");
 
-    aHome->setShortcut(QKeySequence("Ctrl+1"));
-    aCode->setShortcut(QKeySequence("Ctrl+2"));
-    aHangman->setShortcut(QKeySequence("Ctrl+3"));
-    aAnagram->setShortcut(QKeySequence("Ctrl+4"));
-    aOpts->setShortcut(QKeySequence("Ctrl+5"));
-    aMemory->setShortcut(QKeySequence("Ctrl+6"));
-    aSudoku->setShortcut(QKeySequence("Ctrl+7"));
-    a2048->setShortcut(QKeySequence("Ctrl+8"));
+    aHome->setShortcut      (QKeySequence("Ctrl+1"));
+    aCode->setShortcut      (QKeySequence("Ctrl+2"));
+    aHangman->setShortcut   (QKeySequence("Ctrl+3"));
+    aAnagram->setShortcut   (QKeySequence("Ctrl+4"));
+    aOpts->setShortcut      (QKeySequence("Ctrl+5"));
+    aMemory->setShortcut    (QKeySequence("Ctrl+6"));
+    aSudoku->setShortcut    (QKeySequence("Ctrl+7"));
+    a2048->setShortcut      (QKeySequence("Ctrl+8"));
 
     connect(aHome,    &QAction::triggered, [this]{ m_stack->setCurrentIndex(m_idxHome);    });
     connect(aCode,    &QAction::triggered, [this]{ m_stack->setCurrentIndex(m_idxSecond);  });
