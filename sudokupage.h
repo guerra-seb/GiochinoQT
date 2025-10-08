@@ -32,6 +32,7 @@ private:
     void newGame();
     void checkBoard();
     void revealSolution();
+    void keyPressEvent(QKeyEvent *e) override;
 
     // Helpers UI
     void buildGrid();
