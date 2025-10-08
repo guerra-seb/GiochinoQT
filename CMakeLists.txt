@@ -26,6 +26,7 @@ set(APP_SOURCES
   memorypage.h memorypage.cpp
   sudokupage.h sudokupage.cpp
   game2048page.h game2048page.cpp
+  thememanager.h thememanager.cpp
   words.h
   resources.qrc
 )
