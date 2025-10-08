@@ -1,42 +1,70 @@
 #include "homepage.h"
 #include <QVBoxLayout>
 #include <QLabel>
-#include <QPushButton>
 #include <QFont>
+#include <QToolButton>
+#include <QGridLayout>
+#include <QGraphicsDropShadowEffect>
+#include <QStyle>
+#include <QSizePolicy>
+#include <QIcon>
 
 HomePage::HomePage(QWidget *parent) : QWidget(parent) {
-    auto *layout = new QVBoxLayout(this);
+    // Layout radice
+    auto *root = new QVBoxLayout(this);
+    root->setContentsMargins(16,16,16,16);
+    root->setSpacing(8);
 
+    // Titolo
     auto *title = new QLabel("Benvenuto in sto' giochino");
     title->setAlignment(Qt::AlignCenter);
     QFont f = title->font(); f.setPointSize(20); f.setBold(true);
     title->setFont(f);
+    root->addWidget(title);
+    root->addSpacing(12);
 
-    // Bottoni dei giochi
-    auto *btnCode    = new QPushButton("Becca il Codice");
-    auto *btnHangman = new QPushButton("Impiccato");
-    auto *btnAnagram = new QPushButton("Anagrammi");
-    auto *btnMemory  = new QPushButton("Memory (Coppie)");
-    auto *btnSudoku  = new QPushButton("Sudoku");
+    // Griglia di "card"
+    auto *grid = new QGridLayout();
+    grid->setSpacing(16);
 
-    btnCode->setMinimumHeight(40);
-    btnHangman->setMinimumHeight(40);
-    for (auto *b : {btnCode, btnHangman, btnAnagram, btnMemory, btnSudoku}) b->setMinimumHeight(40);
+    auto makeCard = [&](const QString &text, const QIcon &icon) {
+        auto *b = new QToolButton;
+        b->setText(text);
+        b->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+        b->setIcon(icon);
+        b->setIconSize(QSize(56,56));
+        b->setMinimumSize(160,120);
+        b->setCursor(Qt::PointingHandCursor);
+
+        auto *fx = new QGraphicsDropShadowEffect(b);
+        fx->setBlurRadius(24);
+        fx->setOffset(0,6);
+        fx->setColor(QColor(0,0,0,80));
+        b->setGraphicsEffect(fx);
+        return b;
+    };
 
 
-    layout->setContentsMargins(16,16,16,16);
-    layout->addWidget(title);
-    layout->addSpacing(12);
-    layout->addWidget(btnCode);
-    layout->addWidget(btnHangman);
-    layout->addWidget(btnAnagram);
-    layout->addWidget(btnMemory);
-    layout->addWidget(btnSudoku);
-    layout->addStretch();
+    auto *btnMemory = makeCard("Memory (Coppie)", QIcon(":/icons/icons/play-card-star.svg"));
+    auto *btnCode   = makeCard("Becca il Codice", QIcon(":/icons/icons/circle-key.svg"));
+    auto *btnHang   = makeCard("Impiccato",       QIcon(":/icons/icons/hanger.svg"));
+    auto *btnAnagr  = makeCard("Anagrammi",       QIcon(":/icons/icons/arrows-random.svg"));
+    auto *btnSudoku = makeCard("Sudoku",          QIcon(":/icons/icons/grid-dots.svg"));
+    auto *btn2048   = makeCard("2048",            QIcon(":/icons/icons/number-64-small.svg"));
 
-    connect(btnCode,    &QPushButton::clicked, this, &HomePage::startCodeClicked);
-    connect(btnHangman, &QPushButton::clicked, this, &HomePage::startHangmanClicked);
-    connect(btnAnagram, &QPushButton::clicked, this, &HomePage::startAnagramClicked);
-    connect(btnMemory,  &QPushButton::clicked, this, &HomePage::startMemoryClicked);
-    connect(btnSudoku,  &QPushButton::clicked, this, &HomePage::startSudokuClicked);
+    // Disposizione 2 colonne
+    int r=0, c=0;
+    auto place = [&](QWidget *w) { grid->addWidget(w, r, c); if (++c>=2) { c=0; ++r; } };
+    place(btnCode); place(btnHang); place(btnAnagr); place(btnMemory); place(btnSudoku); place(btn2048);
+
+    root->addLayout(grid);
+    root->addStretch();
+
+    // Collegamenti
+    connect(btnCode,   &QToolButton::clicked, this, &HomePage::startCodeClicked);
+    connect(btnHang,   &QToolButton::clicked, this, &HomePage::startHangmanClicked);
+    connect(btnAnagr,  &QToolButton::clicked, this, &HomePage::startAnagramClicked);
+    connect(btnMemory, &QToolButton::clicked, this, &HomePage::startMemoryClicked);
+    connect(btnSudoku, &QToolButton::clicked, this, &HomePage::startSudokuClicked);
+    connect(btn2048, &QToolButton::clicked, this, &HomePage::start2048Clicked);
 }
