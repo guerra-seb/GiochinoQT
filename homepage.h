@@ -12,4 +12,12 @@ signals:
     void startAnagramClicked(); // Anagrammi
     void startMemoryClicked();  // Memory (Coppie)
     void startSudokuClicked();  // Sudoku
+    void start2048Clicked();    // 2048
+    void open_beccailcodice();
+    void open_hangman();
+    void open_anagram();
+    void open_memory();
+    void open_sudoku();
+    void open_2048();
+
 };
