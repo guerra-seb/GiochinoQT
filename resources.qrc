@@ -6,6 +6,6 @@
         <file>icons/circle-key.svg</file>
         <file>icons/arrows-random.svg</file>
         <file>icons/number-64-small.svg</file>
-        <file>icons/settings.svg<file>
+        <file>icons/settings.svg</file>
     </qresource>
 </RCC>
