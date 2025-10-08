@@ -1,0 +1,10 @@
+<RCC>
+    <qresource prefix="/icons">
+        <file>icons/play-card-star.svg</file>
+        <file>icons/hanger.svg</file>
+        <file>icons/grid-dots.svg</file>
+        <file>icons/circle-key.svg</file>
+        <file>icons/arrows-random.svg</file>
+        <file>icons/number-64-small.svg</file>
+    </qresource>
+</RCC>
