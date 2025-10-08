@@ -10,6 +10,7 @@
 #include <QFont>
 #include <QtGlobal>
 #include <algorithm>
+#include <QKeyEvent>
 
 #if QT_VERSION >= QT_VERSION_CHECK(5,10,0)
   #include <QRandomGenerator>
@@ -23,6 +24,7 @@
 #endif
 
 SudokuPage::SudokuPage(QWidget *parent) : QWidget(parent) {
+    setFocusPolicy(Qt::StrongFocus);
     auto *root = new QVBoxLayout(this);
     root->setContentsMargins(16,16,16,16);
     root->setSpacing(10);
@@ -78,7 +80,7 @@ SudokuPage::SudokuPage(QWidget *parent) : QWidget(parent) {
 
 void SudokuPage::buildGrid(){
     // 9x9 QLineEdit con validatore [1..9]; bordi 3x3 disegnati lato per lato
-    QFont f; f.setPointSize(14);
+    QFont f; f.setPointSize(18);
     auto *validator = new QIntValidator(1,9,this);
     for (int r=0;r<9;r++){
         for (int c=0;c<9;c++){
@@ -294,5 +296,13 @@ void SudokuPage::applyCellBorder(QLineEdit *e, int r, int c){
            "selection-background-color:#cde1ff;"
            "selection-color:#000;}";
     e->setStyleSheet(css);
+}
+
+void SudokuPage::keyPressEvent(QKeyEvent *e){
+    if (e->key() == Qt::Key_Escape) {
+        emit backRequested();
+        return;
+    }
+    QWidget::keyPressEvent(e);
 }
 
