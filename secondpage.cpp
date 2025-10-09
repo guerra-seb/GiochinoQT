@@ -8,6 +8,7 @@
 #include <QListWidget>
 #include <QFont>
 #include <QPair>
+#include <QComboBox>
 #include <algorithm>
 
 // QRandomGenerator è disponibile da Qt 5.10 in poi. Se sei su Qt < 5.10, usiamo C++ <random>.
@@ -27,20 +28,54 @@ SecondPage::SecondPage(QWidget *parent) : QWidget(parent) {
     root->setContentsMargins(16,16,16,16);
     root->setSpacing(12);
 
-    // Titolo
-    auto *title = new QLabel("Becca il Codice — indovina il codice di 4 cifre");
-    title->setAlignment(Qt::AlignCenter);
-    QFont tf = title->font(); tf.setPointSize(16); tf.setBold(true);
-    title->setFont(tf);
-    root->addWidget(title);
+    // Titolo (membro: m_title)
+    m_title = new QLabel(QString("Becca il Codice — indovina il codice di %1 cifre").arg(m_codeLen));
+    m_title->setAlignment(Qt::AlignCenter);
+    {
+        QFont tf = m_title->font();
+        tf.setPointSize(16);
+        tf.setBold(true);
+        m_title->setFont(tf);
+    }
+    root->addWidget(m_title);
+
+    // Riga difficoltà (combo 4/6/8/10)
+    {
+        auto *diffRow = new QHBoxLayout;
+        auto *diffLbl = new QLabel("Difficoltà:");
+        m_difficulty = new QComboBox;
+        m_difficulty->addItem("4 cifre (Facile)", 4);
+        m_difficulty->addItem("6 cifre (Medio)", 6);
+        m_difficulty->addItem("8 cifre (Difficile)", 8);
+        m_difficulty->addItem("10 cifre (Estremo)", 10);
+        m_difficulty->setCurrentIndex(0);
+
+        diffRow->addStretch();
+        diffRow->addWidget(diffLbl);
+        diffRow->addWidget(m_difficulty);
+        diffRow->addStretch();
+        root->addLayout(diffRow);
+
+        // collegamento cambio difficoltà
+        connect(m_difficulty,
+        #if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0)
+                QOverload<int>::of(&QComboBox::currentIndexChanged),
+        #else
+                static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+        #endif
+                this, &SecondPage::onDifficultyChanged);
+    }
 
     // Display del codice inserito
     m_display = new QLineEdit;
     m_display->setReadOnly(true);          // si usa la tastiera numerica
     m_display->setAlignment(Qt::AlignCenter);
     m_display->setMaxLength(m_codeLen);
-    QFont df = m_display->font(); df.setPointSize(18);
-    m_display->setFont(df);
+    {
+        QFont df = m_display->font();
+        df.setPointSize(18);
+        m_display->setFont(df);
+    }
     root->addWidget(m_display);
 
     // Tastiera numerica 0-9 + controlli
@@ -199,4 +234,20 @@ void SecondPage::onSubmit() {
     }
 
     m_display->clear(); // pronta per il prossimo tentativo
+}
+
+// ====== NUOVO: gestione difficoltà ======
+void SecondPage::onDifficultyChanged(int)
+{
+    const int len = m_difficulty->currentData().toInt();
+    if (len == m_codeLen) return;
+    m_codeLen = len;
+    applyCodeLenChange();
+}
+
+void SecondPage::applyCodeLenChange()
+{
+    m_display->setMaxLength(m_codeLen);
+    m_title->setText(QString("Becca il Codice — indovina il codice di %1 cifre").arg(m_codeLen));
+    newSecret(); // rigenera segreto e resetta UI
 }
