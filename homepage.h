@@ -13,6 +13,8 @@ signals:
     void startMemoryClicked();  // Memory (Coppie)
     void startSudokuClicked();  // Sudoku
     void start2048Clicked();    // 2048
-    void optionsRequested();     // Options
+    void startSnakeClicked();   // snake
+    void startMinesClicked();   // Prato Fiorito
+    void optionsRequested();    // Options
 
 };
