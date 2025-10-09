@@ -19,6 +19,8 @@ private:
     int m_idxMemory  = -1; // Memory: gioco
     int m_idxSudoku  = -1; // Sudoku
     int m_idx2048    = -1; // 2048
+    int m_idxSnake   = -1; // Snake
+    int m_idxMines   = -1; // Prato Fiorito
 
     void setupMenus();
 };
